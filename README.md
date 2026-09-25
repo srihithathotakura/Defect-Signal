@@ -104,9 +104,9 @@ DefectSignal_Submission/
 * **`README.md`** – Overview of the case study, problem, objectives, data collection, methods, key results and references.
 * **`analysis.ipynb`** – Complete Jupyter Notebook containing data preparation, exploratory analysis, visualization, analytics/modeling, evaluation and outputs.
 * **`Case_Study_Report.pdf`** – Final case study report following the prescribed report format.
-* **`data/raw/reviews_raw.csv`** – Collected raw review dataset.
-* **`data/clean/reviews_clean.csv`** – Final cleaned dataset used for analysis.
-* **`data/clean/reviews_labeled.csv`** – Dataset containing the labels used in the analysis.
+* **`data/reviews_raw.csv`** – Collected raw review dataset.
+* **`data/reviews_clean.csv`** – Final cleaned dataset used for analysis.
+* **`data/reviews_labeled.csv`** – Dataset containing the labels used in the analysis.
 
 ## References
 

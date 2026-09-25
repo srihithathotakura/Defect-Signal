@@ -94,12 +94,9 @@ DefectSignal_Submission/
 ├── Case_Study_Report.pdf
 │
 └── data/
-    ├── raw/
-    │   └── reviews_raw.csv
-    │
-    └── clean/
-        ├── reviews_clean.csv
-        └── reviews_labeled.csv
+      └── reviews_raw.csv
+      ├── reviews_clean.csv
+      └── reviews_labeled.csv
 ```
 
 ### File Description

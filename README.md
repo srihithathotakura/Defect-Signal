@@ -1,65 +1,130 @@
 # DefectSignal: Prioritizing Urgent Product Complaints in Consumer Tech Reviews
 
-**Business Analytics Individual Case Study**
-Srihitha Thotakura | CB.SC.U4CSE23450 | CSE-E | Amrita Vishwa Vidyapeetham, Coimbatore
-
 ## Problem Statement
 
-Tech brands receive thousands of product reviews across platforms like Google Play Store, Flipkart and Amazon, but quality and support teams typically review this feedback manually and in batches, spotting defect patterns only after complaints have already escalated into returns, poor ratings, or reputational damage. This study focuses on portable consumer electronics (wireless earbuds, smartwatches, and power banks), where faults such as overheating and battery failure can also be safety risks. Early identification of urgent complaints lets QA and support teams intervene proactively rather than reactively, improving customer retention and reducing warranty costs.
+Tech brands receive large volumes of customer reviews across platforms such as Google Play Store and Flipkart. Manually reviewing this feedback can delay the identification of product defects, malfunction complaints, and other issues requiring attention.
+
+This case study develops a text-classification approach to identify **Urgent** reviews, indicating safety risks, malfunctions, or refund/replacement demands, from **Non-Urgent** general feedback. The goal is to help quality assurance and customer support teams prioritize potentially important complaints for faster review.
 
 ## Objectives
 
-1. Classify consumer reviews as **Urgent** (safety risk, malfunction, or refund/replacement demand) or **Non-Urgent** (general feedback) using TF-IDF with Logistic Regression and Naive Bayes, evaluated mainly on recall and F1-score for the Urgent class.
-2. Identify recurring language patterns and product features most associated with urgent complaints across the three product types.
-3. Build a data-driven triage framework that helps QA and customer support teams prioritize high-risk reviews for faster response.
+1. Classify consumer reviews as **Urgent** or **Non-Urgent** using TF-IDF with Logistic Regression and Multinomial Naive Bayes, with emphasis on recall and F1-score for the Urgent class.
+2. Identify recurring language patterns and product features associated with urgent complaints across wireless earbuds, smartwatches, and power banks.
+3. Develop a data-driven triage approach that can help QA and customer support teams prioritize high-risk reviews.
 
 ## Data Collection
 
-- **Sources:** Google Play Store (5 companion apps: boAt Crest, NoiseFit, Zepp/Amazfit, realme Link, HeyMelody) and Flipkart (12 product listings across power banks, earbuds and smartwatches), scraped in the week of 18–23 September 2026.
-- **Method:** Google Play via the `google-play-scraper` Python library; Flipkart via the Apify actor `solidcode/flipkart-scraper`. No ready-made/Kaggle dataset was used.
-- **Size:** 16,768 raw reviews (14,336 Google Play, 2,432 Flipkart), 13 attributes. Reviewer names, locations, profile links and images were never collected; no login was used.
+The dataset was collected through **web scraping of publicly accessible customer reviews** during 18–23 September 2026.
 
-## Analytics Methods Used
+### Sources
 
-- **Weak/rule-based labeling:** transparent keyword rules (8 rule types: app connectivity, not-working, malfunction, refund/fraud, support complaint, hardware defect, battery failure, safety) label 21.9% of the 12,449 cleaned reviews Urgent.
-- **Label validation:** 700 reviews hand-labeled by the author (280 dev / 420 test); rule-vs-human agreement on test = precision 0.58, recall 0.65, F1 0.61, **Cohen's kappa 0.50** (moderate agreement) — the ceiling on achievable model performance.
-- **Classification:** TF-IDF (uni+bigrams, min_df=5, 20,000-term cap → realized vocabulary 7,529 terms), fit on the training split only, with class-weighted **Logistic Regression** and **Multinomial Naive Bayes**. Model selected on the dev split by Urgent-class F1; final numbers reported once on the untouched test split.
+* **Google Play Store:** Reviews from five companion applications associated with smartwatches and earbuds:
+
+  * boAt Crest
+  * NoiseFit
+  * Zepp (Amazfit)
+  * realme Link
+  * HeyMelody
+
+* **Flipkart:** Reviews from 12 product listings covering:
+
+  * 5 power banks
+  * 4 earbuds
+  * 3 smartwatches
+
+No ready-made dataset from Kaggle, UCI, GitHub, or similar repositories was used as the primary dataset.
+
+The collected data was consolidated into a common structure and personal or identifying information was removed or anonymized before analysis.
+
+### Dataset
+
+The final raw dataset contains **16,768 reviews** and **13 attributes**.
+
+Important variables include:
+
+* `review_text` – customer review text used for text classification
+* `rating` – review rating
+* `product_category` – product category
+* `platform_source` – source platform
+* `source_type` – app or product review
+
+The cleaned dataset used for analysis contains **12,449 reviews**.
+
+## Analytics Methods
+
+The analysis follows the complete workflow documented in `analysis.ipynb`:
+
+1. Data quality checking and cleaning
+2. Exploratory data analysis and visualization
+3. Rule-based weak labeling of reviews as Urgent/Non-Urgent
+4. TF-IDF text feature extraction
+5. Logistic Regression classification
+6. Multinomial Naive Bayes classification
+7. Model comparison and selection
+8. Evaluation using accuracy, precision, recall, F1-score and ROC-AUC
+9. Confusion-matrix and error analysis
+
+Because missing a genuinely urgent complaint is considered more costly than generating an additional review for human checking, **Urgent-class recall and F1-score** were given greater importance during model selection.
 
 ## Key Results
 
-Selected model: **TF-IDF + Naive Bayes** (class-weighted)
+The selected **TF-IDF + Multinomial Naive Bayes** model achieved the following results on the held-out human-labeled test set:
 
-| Split | Accuracy | Precision (Urgent) | Recall (Urgent) | F1 (Urgent) | ROC-AUC |
-|---|---|---|---|---|---|
-| Dev | 0.771 | 0.411 | 0.830 | 0.549 | 0.845 |
-| Test (final) | **0.781** | **0.473** | **0.845** | **0.607** | **0.880** |
+| Metric           | Result |
+| ---------------- | -----: |
+| Accuracy         |  78.1% |
+| Urgent Precision |  47.3% |
+| Urgent Recall    |  84.5% |
+| Urgent F1-score  |  60.7% |
+| ROC-AUC          |  0.880 |
 
-- App/device connectivity failures dominate the Urgent label (53.8% of rule matches) — this is mostly a software/pairing-reliability signal, not physical hazard (only 0.7% of matches were safety-specific).
-- Star rating alone is an unreliable triage signal: 20.3% of 3-star reviews are Urgent, not just 1-star reviews.
-- Urgent share varies widely by brand (realme 33.5%, Noise 26.7% vs. Amazfit 10.9%, Portronics 8.9%) and by platform (Google Play 23.6% vs. Flipkart 10.6%).
-- See `Case_Study_Report.pdf`, Section 6, for full business insights and recommendations.
+The analysis found that **app/device connectivity and pairing problems were the dominant urgency pattern** in the collected data. Safety-specific complaints such as overheating represented a much smaller proportion of the rule-identified urgent complaints.
 
-## Repository Structure
+The results support using the model as a **first-pass triage system with human review**, rather than as a fully automated decision system.
 
+## Repository Contents
+
+The submission contains the files required for the case study:
+
+```text
+DefectSignal_Submission/
+│
+├── README.md
+├── analysis.ipynb
+├── Case_Study_Report.pdf
+│
+└── data/
+    ├── raw/
+    │   └── reviews_raw.csv
+    │
+    └── clean/
+        ├── reviews_clean.csv
+        └── reviews_labeled.csv
 ```
-├── README.md                        # this file
-├── Case_Study_Report.pdf             # full case study report (Sections 1-7)
-├── Case_Study_Report.docx            # editable version of the report
-├── analysis.ipynb                    # complete notebook (Sections 3-4), executed with outputs
-├── data/
-│   ├── raw/reviews_raw.csv           # scraped, consolidated raw dataset (16,768 rows)
-│   ├── labeling/gold_sample_labeled.csv  # 700 hand-labeled reviews used for dev/test
-│   └── clean/                        # cleaned, labeled, split datasets and model comparison output
-├── models/                           # saved TF-IDF vectorizer + trained Logistic Regression / Naive Bayes models
-└── figures/                          # all figures generated by the notebook
-```
+
+### File Description
+
+* **`README.md`** – Overview of the case study, problem, objectives, data collection, methods, key results and references.
+* **`analysis.ipynb`** – Complete Jupyter Notebook containing data preparation, exploratory analysis, visualization, analytics/modeling, evaluation and outputs.
+* **`Case_Study_Report.pdf`** – Final case study report following the prescribed report format.
+* **`data/raw/reviews_raw.csv`** – Collected raw review dataset.
+* **`data/clean/reviews_clean.csv`** – Final cleaned dataset used for analysis.
+* **`data/clean/reviews_labeled.csv`** – Dataset containing the labels used in the analysis.
 
 ## References
 
-- Abbas, Y., & Malik, M. S. I. (2023). Defective products identification framework using online reviews. *Electronic Commerce Research*, 23(2), 899–920.
-- Fuchs, M., Jadhav, A., Jaishankar, A., Cauffman, C., & Spanakis, G. (2023). "What's wrong with this product?" – Detection of hazardous products from online reviews. In *Proceedings of ICAIL '23* (pp. 397–401). ACM.
-- Mangnoesing, G. V. H., Trușcă, M. M., & Frasincar, F. (2020). Pattern learning for detecting defect reports and improvement requests in app reviews. *NLDB 2020*, LNCS vol. 12089. Springer.
-- Silva, M. L. M., et al. (2025). Classification of user reports for detection of faulty computer components using NLP models. arXiv:2503.16614.
-- `google-play-scraper` (PyPI); Apify actor `solidcode/flipkart-scraper`.
+1. Abbas, Y., & Malik, M. S. I. (2023). *Defective products identification framework using online reviews*. Electronic Commerce Research, 23(2), 899–920. https://doi.org/10.1007/s10660-021-09495-8
 
-Full reference list with DOIs in `Case_Study_Report.pdf`, Section 7.2.
+2. Fuchs, M., Jadhav, A., Jaishankar, A., Cauffman, C., & Spanakis, G. (2023). *“What’s wrong with this product?” – Detection of hazardous products from online reviews*. Proceedings of the Nineteenth International Conference on Artificial Intelligence and Law (ICAIL '23), 397–401.
+
+3. Mangnoesing, G. V. H., Truşcă, M. M., & Frasincar, F. (2020). *Pattern learning for detecting defect reports and improvement requests in app reviews*. Natural Language Processing and Information Systems (NLDB 2020), Lecture Notes in Computer Science, 12089. Springer. https://doi.org/10.1007/978-3-030-51310-8_12
+
+4. Silva, M. L. M., Mendonça, A. L. C., Neto, E. R. D., Chaves, I. C., Brito, F. T., Farias, V. A. E., & Machado, J. C. (2025). *Classification of user reports for detection of faulty computer components using NLP models: A case study*. arXiv:2503.16614.
+
+5. Google Play Store. https://play.google.com
+
+6. Flipkart. https://www.flipkart.com
+
+7. `google-play-scraper` Python package. https://pypi.org/project/google-play-scraper/
+
+8. Flipkart Reviews Scraper, Apify actor (`solidcode/flipkart-scraper`). https://apify.com/solidcode/flipkart-scraper
